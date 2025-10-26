@@ -1,6 +1,6 @@
 # onprem-k8s-monitoring
 
-This repository provides a way to monitor multiple machines running in an on-premise environment using Grafana and Prometheus deployed on Kubernetes.
+This tool monitors multiple machines running in an on-premises environment using Grafana and Prometheus, without joining them in a Kubernetes cluster.
 
 ## Overview
 
@@ -81,7 +81,7 @@ Deploy Prometheus on your Kubernetes cluster.
 
 2.  **Configure `node_exporter` scrape targets.**
 
-    You need to set the list of IP addresses and ports for the machines running `node_exporter` in the `configmap.scrape_configs` section of `values.yaml`. It is recommended to manage this configuration by creating your own values file rather than editing the repository's `values.yaml` directly. There are two main ways to do this:
+    You need to set the list of IP addresses and ports for the machines running `node_exporter` in the `configmap.scrape_configs` section of `values.yaml`. Instead of directly editing the `values.yaml` file within the repository, please create and manage your own Values file. There are two main ways to do this:
 
     *   **Method A: Create a new values file**
 
@@ -166,3 +166,66 @@ Deploy Grafana on your Kubernetes cluster.
     ```
 
 This completes the setup. You can now access Grafana and add Prometheus as a data source to visualize the metrics of your machines.
+
+## Accessing the Grafana Web UI
+
+To access the Grafana web UI, you need to configure an external access method (`NodePort` or `Ingress`) in the `helmfiles/values/grafana.yaml` file.
+Alternatively, you can use the `kubectl port-forward` command to temporarily access it from your local machine.
+
+### Method 1: Using NodePort
+
+Set `service.type` to `NodePort` in `helmfiles/values/grafana.yaml`.
+
+```yaml
+# helmfiles/values/grafana.yaml
+service:
+  type: NodePort
+```
+
+After deployment, access the following URL:
+`http://<IP address of any node in the Kubernetes cluster>:<NodePort>`
+
+### Method 2: Using Ingress
+
+If you have an Ingress Controller installed in your cluster, enable Ingress in `helmfiles/values/grafana.yaml`.
+
+```yaml
+# helmfiles/values/grafana.yaml
+ingress:
+  enabled: true
+  ingressClassName: nginx # Change according to your Ingress Controller
+  hosts:
+    - grafana.local # Hostname to access Grafana
+```
+
+After deployment, access the following URL:
+`http://grafana.local`
+
+### Method 3: Using kubectl port-forward
+
+Use this method to temporarily access Grafana from your local machine without configuring `NodePort` or `Ingress`.
+
+1.  Run the following command to start port forwarding:
+
+    ```bash
+    kubectl port-forward -n monitoring svc/grafana 3000:80
+    ```
+
+2.  Open `http://localhost:3000` in your browser.
+
+### Login Credentials
+
+After accessing the UI using any of the methods above, a login screen will appear.
+The username and password are stored in a Grafana Secret resource and can be retrieved with the following commands:
+
+*   **Username**
+
+    ```bash
+    kubectl get secret -n monitoring grafana -o jsonpath="{.data.admin-user}" | base64 -d
+    ```
+
+*   **Password**
+
+    ```bash
+    kubectl get secret -n monitoring grafana -o jsonpath="{.data.admin-password}" | base64 -d
+    ```

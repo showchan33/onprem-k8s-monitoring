@@ -1,6 +1,6 @@
 # onprem-k8s-monitoring
 
-オンプレミス環境で稼働している複数のマシンを、Kubernetes上にデプロイしたGrafanaとPrometheusを用いて監視するためのリポジトリです。
+オンプレミス環境で稼働している複数のマシンを、Kubernetesクラスターに含めずにGrafanaとPrometheusを用いて監視するツールです。
 
 ## 概要
 
@@ -28,11 +28,11 @@
 ## 事前準備
 
 - **監視対象マシン**:
-  - DockerおよびDocker Composeがインストールされていること。
+  - DockerおよびDocker Composeがインストールされていること
 - **Kubernetesクラスタ**:
-  - `node-exporter`をデプロイした各マシンにネットワーク的にアクセス可能であること。
-  - Helmが利用可能であること。
-  - Helmfileが利用可能であること。
+  - `node-exporter`をデプロイした各マシンにネットワーク的にアクセス可能であること
+  - Helmが利用可能であること
+  - Helmfileが利用可能であること
 
 ## 構築手順
 
@@ -168,3 +168,66 @@ Kubernetesクラスタ上にGrafanaをデプロイします。
     ```
 
 以上で構築は完了です。Grafanaにアクセスし、データソースとしてPrometheusを指定することで、各マシンのメトリクスを可視化できます。
+
+## Grafana WebUI へのアクセス方法
+
+GrafanaのWeb UIにアクセスするには、`helmfiles/values/grafana.yaml`ファイルで外部アクセスの方法（`NodePort`または`Ingress`）を設定する必要があります。
+もしくは、`kubectl port-forward`コマンドを利用して、ローカルマシンから一時的にアクセスすることも可能です。
+
+### 方法1: NodePortを利用する
+
+`helmfiles/values/grafana.yaml`で`service.type`を`NodePort`に設定します。
+
+```yaml
+# helmfiles/values/grafana.yaml
+service:
+  type: NodePort
+```
+
+デプロイ後、以下のURLにアクセスします。
+`http://<KubernetesクラスタのいずれかのノードのIPアドレス>:<NodePort>`
+
+### 方法2: Ingressを利用する
+
+Ingress Controllerがクラスターにインストールされている場合、`helmfiles/values/grafana.yaml`でIngressを有効にします。
+
+```yaml
+# helmfiles/values/grafana.yaml
+ingress:
+  enabled: true
+  ingressClassName: nginx # ご利用のIngress Controllerに合わせて変更
+  hosts:
+    - grafana.local # アクセスするためのホスト名
+```
+
+デプロイ後、以下のURLにアクセスします。
+`http://grafana.local`
+
+### 方法3: kubectl port-forwardを利用する
+
+`NodePort`や`Ingress`を設定せずに、ローカルマシンから一時的にアクセスする場合に利用します。
+
+1.  以下のコマンドを実行して、ポートフォワードを開始します。
+
+    ```bash
+    kubectl port-forward -n monitoring svc/grafana 3000:80
+    ```
+
+2.  ブラウザで `http://localhost:3000` にアクセスします。
+
+### ログイン情報
+
+上記いずれかの方法でアクセスした後、ログイン画面が表示されます。
+ユーザー名とパスワードは、GrafanaのSecretリソースに格納されており、それぞれ以下のコマンドで確認できます。
+
+*   **ユーザー名**
+
+    ```bash
+    kubectl get secret -n monitoring grafana -o jsonpath="{.data.admin-user}" | base64 -d
+    ```
+
+*   **パスワード**
+
+    ```bash
+    kubectl get secret -n monitoring grafana -o jsonpath="{.data.admin-password}" | base64 -d
+    ```
