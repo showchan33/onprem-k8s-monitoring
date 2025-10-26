@@ -1,0 +1,47 @@
+# For more details on available values, please refer to the official documentation:
+# https://artifacthub.io/packages/helm/grafana/grafana?modal=values
+
+# Integration with Prometheus Server
+datasources:
+ datasources.yaml:
+   apiVersion: 1
+   datasources:
+    - name: "Prometheus"
+      type: prometheus
+      access: proxy
+      url: http://prometheus.monitoring.svc.cluster.local:9090
+
+# Basic Dashboard Configuration
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+# Configuration to add Node Exporter Dashboard
+dashboards:
+  default:
+    node-exporter:
+      datasource: Prometheus
+      url: https://grafana.com/api/dashboards/1860/revisions/42/download
+
+# service:
+#  type: NodePort
+
+# ingress:
+#   enabled: true
+#   ingressClassName: nginx
+#   hosts:
+#     - grafana.local
+
+# persistence:
+#   type: pvc
+#   enabled: true
+#   storageClassName: default

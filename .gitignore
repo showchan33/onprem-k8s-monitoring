@@ -1,0 +1,8 @@
+node-exporter/.env
+
+helm-charts/prometheus-custom/values*.yaml
+!helm-charts/prometheus-custom/values.yaml
+helm-charts/prometheus-custom/targets*.yaml
+
+helmfiles/values/*.yaml
+helmfiles/vars/*.yaml

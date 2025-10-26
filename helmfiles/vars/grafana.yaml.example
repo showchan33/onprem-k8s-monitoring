@@ -1,0 +1,5 @@
+grafana:
+  version: "10.1.2"
+  namespace: monitoring
+  values:
+    - ../values/grafana.yaml

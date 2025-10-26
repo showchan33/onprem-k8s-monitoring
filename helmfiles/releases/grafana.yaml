@@ -1,0 +1,13 @@
+values:
+  - ../vars/grafana.yaml
+
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - name: grafana
+    namespace: {{ .Values.grafana.namespace }}
+    chart: grafana/grafana
+    version: {{ .Values.grafana.version }}
+    values: {{ toYaml .Values.grafana.values | nindent 6 }}

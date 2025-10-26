@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: {{ .Values.namespace }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.configmap.scrape_interval }}
+
+    scrape_configs:
+      {{- toYaml .Values.configmap.scrape_configs | nindent 6 }}
+
