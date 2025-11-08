@@ -64,7 +64,7 @@
 3.  以下のコマンドを実行して`node-exporter`を起動します。
 
     ```bash
-    docker-compose up -d
+    docker compose up -d
     ```
 
 ### 2. Prometheusのデプロイ

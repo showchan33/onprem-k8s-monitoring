@@ -64,7 +64,7 @@ Start the `node-exporter` container on each machine you want to monitor.
 3.  Run the following command to start `node-exporter`.
 
     ```bash
-    docker-compose up -d
+    docker compose up -d
     ```
 
 ### 2. Deploy Prometheus
